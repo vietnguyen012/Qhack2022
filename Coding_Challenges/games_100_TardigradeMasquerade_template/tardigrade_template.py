@@ -23,9 +23,16 @@ def compute_entanglement(theta):
         was initially present
     """
 
-    dev = qml.device("default.qubit", wires=3)
-
     # QHACK #
+    # Compute S2 without tardigrade
+    rho_B = 0.5 * np.array([[1, 0], [0, 1]])
+    S2_without_tardigrade = second_renyi_entropy(rho_B)
+
+    # Compute S2 with tardigrade
+    rho_B = 0.5 * np.array([[np.cos(theta/2)**2, 0], [0, np.sin(theta/2)**2 + 1]])
+    S2_with_tardigrade = second_renyi_entropy(rho_B)
+
+    return S2_without_tardigrade, S2_with_tardigrade
 
     # QHACK #
 
