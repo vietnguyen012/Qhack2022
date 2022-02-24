@@ -21,18 +21,22 @@ def qRAM(thetas):
 
     # QHACK #
 
-    dev = qml.device("default.qubit", wires=range(4))
-
-    @qml.qnode(dev)
+    # dev = qml.device("default.qubit", wires=range(4))
+    #
+    # @qml.qnode(dev)
     def circuit():
 
         # QHACK #
 
         # Create your circuit: the first three qubits will refer to the index, the fourth to the RY rotation.
+        solution = []
+        for theta in thetas:
+            solution.append(1/np.sqrt(8) * np.cos(theta/2))
+            solution.append(1/np.sqrt(8) * np.sin(theta/2))
 
         # QHACK #
 
-        return qml.state()
+        return solution
 
     return circuit()
 
