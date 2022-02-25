@@ -7,10 +7,8 @@ NUM_WIRES = 6
 
 def triple_excitation_matrix(gamma):
     """The matrix representation of a triple-excitation Givens rotation.
-
     Args:
         - gamma (float): The angle of rotation
-
     Returns:
         - (np.ndarray): The matrix representation of a triple-excitation
     """
@@ -24,6 +22,7 @@ def triple_excitation_matrix(gamma):
     arr[b,b] = np.cos(gamma/2)
     arr[a,b] = -np.sin(gamma/2)
     arr[b,a] = np.sin(gamma/2)
+    return arr
 
     # QHACK #
 
@@ -34,11 +33,9 @@ dev = qml.device("default.qubit", wires=6)
 @qml.qnode(dev)
 def circuit(angles):
     """Prepares the quantum state in the problem statement and returns qml.probs
-
     Args:
         - angles (list(float)): The relevant angles in the problem statement in this order:
         [alpha, beta, gamma]
-
     Returns:
         - (np.tensor): The probability of each computational basis state
     """
