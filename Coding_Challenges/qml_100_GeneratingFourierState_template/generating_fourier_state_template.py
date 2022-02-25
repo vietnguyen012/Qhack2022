@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 import sys
 from pennylane import numpy as np
 import pennylane as qml
@@ -6,10 +8,12 @@ import pennylane as qml
 def generating_fourier_state(n_qubits, m):
     """Function which, given the number of qubits and an integer m, returns the circuit and the angles that generate the state
     QFT|m> following the above template.
+
     Args:
         - n_qubits (int): number of qubits in the circuit.
         - m (int): basis state that we generate. For example, for 'm = 3' and 'n_qubits = 4'
         we would generate the state QFT|0011> (3 in binary is 11).
+
     Returns:
        - (qml.QNode): circuit used to generate the state.
        - (list[float]): angles that generate the state QFT|m>.
@@ -22,6 +26,7 @@ def generating_fourier_state(n_qubits, m):
         """This is the quantum circuit that we will use."""
 
         # QHACK #
+
         # Add the template of the statement with the angles passed as an argument.
         for i in range(n_qubits):
             qml.Hadamard(wires=i)
@@ -42,40 +47,40 @@ def generating_fourier_state(n_qubits, m):
         """
 
         probs = circuit(angles)
-
         # QHACK #
 
         # The return error should be smaller when the state m is more likely to be obtained.
-        ### take probability output and get absolute distance from 'm'
-        loss = 0.0
-        temp = format(m, "b")
-        # building prob_ideal array, reversing order to match qubit order
-        prob_ideal = []
-        for i in reversed(range(n_qubits)):
-            if temp[i] == "1":
-                prob_ideal.append(1)
-                prob_ideal.append(0)
-            else:
-                prob_ideal.append(0)
-                prob_ideal.append(1)
+        def cross_entropy_loss(target, prediction):
+            # assert type(target) is list
+            # assert type(prediction) is list
+            # assert len(target) == len(prediction)
 
-        # m=11, which means probs should be [1 0 1 0] for perfect match
-        for i in range(n_qubits * 2):
-            loss += abs(prob_ideal[i] - probs[i])
+            loss = 0
+            for i in range(len(target)):
+                loss_cur = -(target[i] * np.log(prediction[i] + 1e-12) + (1 - target[i]) * np.log(1 - prediction[i] + 1e-12))
+                loss += loss_cur
+            return loss
+
+        target = [0] * len(probs)
+        target[m] = 1
+
+        loss = cross_entropy_loss(target, list(probs))
         return loss
+
         # QHACK #
 
     # This subroutine will find the angles that minimize the error function.
     # Do not modify anything from here.
 
     opt = qml.AdamOptimizer(stepsize=0.8)
-    epochs = 5000
+    epochs = 100
 
     angles = np.zeros(n_qubits, requires_grad=True)
 
     for epoch in range(epochs):
         angles = opt.step(error, angles)
         angles = np.clip(opt.step(error, angles), -2 * np.pi, 2 * np.pi)
+        # print(f'Epoch {epoch} | Loss: {error(angles)} | {angles}')
 
     return circuit, angles
 
@@ -98,4 +103,4 @@ if __name__ == "__main__":
             qml.apply(op)
         return qml.state()
 
-    print(",".join([f"{p.round(5)}" for p in check_with_arbitrary_state()]))
+    print(",".join([f"{p.real.round(5)},{p.imag.round(5)}" for p in check_with_arbitrary_state()]))
